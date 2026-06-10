@@ -3,13 +3,21 @@ import { Hono } from 'hono'
 const app = new Hono()
 
 app.use(async (c, next) => {
-  if (c.req.header("Authorization")) {
-    // Validation logic should be written here
-    await next()
-  } else {
-    return c.text("You dont have acces");
+  const auth = c.req.header("Authorization");
+
+  if (!auth) {
+    return c.text("You don't have access", 401);
   }
-})
+
+  const [scheme, token] = auth.split(" ");
+
+  if (scheme === "Bearer" && token === "ranDoMauTHheADeR") {
+    await next();
+    return;
+  }
+
+  return c.text("You don't have access", 401);
+});
 
 app.post('/', async (c) => {
   const body = await c.req.json()
